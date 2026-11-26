@@ -1,0 +1,8 @@
+node_modules
+dist
+.env
+.env.development.local
+.env.local
+supabase/.temp
+tests/test_log.md
+*.tsbuildinfo

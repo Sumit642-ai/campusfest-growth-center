@@ -1,0 +1,8 @@
+-- 6 scripted edits through the app's edit layer (never touching source tables).
+-- Run, then: node run_tests.mjs after-edits   To undo: delete from app_opp_history where history_id like 'TEST-%'; delete from payments where note='TEST';
+insert into app_opp_history select opportunity_name, brand_name, 'partner_confirmed', 90000, 90000, owner_name, '2025-04-10 23:00+05:30', 'TEST-1', opportunity_id, brand_id, owner_id from src_opp_history where opportunity_id='O048' limit 1;  -- confirm a negotiating deal
+insert into app_opp_history select opportunity_name, brand_name, 'withdrawn', proposed_value_inr, 0, owner_name, '2025-04-10 23:00+05:30', 'TEST-2', opportunity_id, brand_id, owner_id from src_opp_history where opportunity_id='O001' and stage='partner_confirmed' limit 1;  -- withdraw Beardo's main deal
+insert into app_opp_history select opportunity_name, brand_name, 'negotiating', 250000, 0, owner_name, '2025-04-10 23:00+05:30', 'TEST-3', opportunity_id, brand_id, owner_id from src_opp_history where opportunity_id='O037' limit 1;  -- revalue a deal
+insert into app_opp_history select opportunity_name, brand_name, 'lost', proposed_value_inr, 0, owner_name, '2025-04-10 23:00+05:30', 'TEST-4', opportunity_id, brand_id, owner_id from src_opp_history where opportunity_id='O035' limit 1;  -- lose a stuck deal
+insert into app_opp_history select opportunity_name, brand_name, 'partner_confirmed', 90000, 90000, owner_name, '2025-04-10 23:00+05:30', 'TEST-6', opportunity_id, brand_id, owner_id from src_opp_history where opportunity_id='O058' limit 1;  -- confirm another deal
+insert into payments (opportunity_id, amount_inr, due_date, paid_on, method, note) values ('O004', 50000, '2025-04-05', '2025-04-03', 'UPI', 'TEST');  -- record a payment

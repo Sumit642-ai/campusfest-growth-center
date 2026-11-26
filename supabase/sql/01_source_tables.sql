@@ -1,0 +1,10 @@
+create table src_event (event_name text, history_start date, history_end date, event_starts_at timestamptz, event_ends_at timestamptz, timezone text, currency text, fictional boolean);
+create table src_targets (effective_at timestamptz, qualified_brands_goal int, confirmed_partnerships_goal int, target_version text);
+create table src_brands (brand_name text, industry text, owner_name text, created_at timestamptz, brand_id text, owner_id text);
+create table src_contacts (contact_name text, job_title text, brand_name text, created_at timestamptz, contact_id text, brand_id text);
+create table src_campaigns (campaign_name text, channel text, objective text, audience text, owner_name text, planned_start_at timestamptz, planned_end_at timestamptz, created_at timestamptz, sponsor_campaign_id text, owner_id text);
+create table src_interactions (brand_name text, contact_name text, campaign_name text, channel text, event_type text, outcome text, summary text, occurred_at timestamptz, interaction_id text, attempt_id text, origin_interaction_id text, brand_id text, contact_id text, sponsor_campaign_id text, owner_id text);
+create table src_qualification (brand_name text, qualification_status text, reason text, source_campaign_name text, effective_at timestamptz, history_id text, brand_id text, sponsor_campaign_id text);
+create table src_opportunities (opportunity_name text, brand_name text, primary_contact_name text, originating_campaign_name text, support_type text, created_at timestamptz, opportunity_id text, brand_id text, primary_contact_id text, sponsor_campaign_id text);
+create table src_opp_history (opportunity_name text, brand_name text, stage text, proposed_value_inr numeric, confirmed_value_inr numeric, owner_name text, effective_at timestamptz, history_id text, opportunity_id text, brand_id text, owner_id text);
+create table src_activations (brand_name text, opportunity_name text, attendee_campaign_name text, activation_note text, linked_at timestamptz, activation_id text, brand_id text, opportunity_id text, attendee_campaign_id text);

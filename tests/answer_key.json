@@ -1,0 +1,215 @@
+[
+ {
+  "q": "How many confirmed partnerships did we have as of 15 March 2025?",
+  "as_of": "2025-03-15",
+  "expect": {
+   "metric": "confirmed_partnerships",
+   "as_of": "2025-03-15"
+  }
+ },
+ {
+  "q": "How many qualified brands did we have on 15 Feb 2025?",
+  "as_of": "2025-02-15",
+  "expect": {
+   "metric": "qualified_brands",
+   "as_of": "2025-02-15"
+  }
+ },
+ {
+  "q": "What is the total confirmed partnership value at fest eve, 11 April 2025?",
+  "as_of": "2025-04-11",
+  "expect": {
+   "metric": "confirmed_value",
+   "as_of": "2025-04-11",
+   "money": true
+  }
+ },
+ {
+  "q": "How many distinct brands did we reach out to in total?",
+  "as_of": "2025-04-20",
+  "expect": {
+   "metric": "brands_touched",
+   "as_of": "2025-04-20"
+  }
+ },
+ {
+  "q": "How many outreach attempts were sent in total?",
+  "as_of": "2025-04-20",
+  "expect": {
+   "metric": "outreach_attempts",
+   "as_of": "2025-04-20"
+  }
+ },
+ {
+  "q": "How many positive reply events did we get?",
+  "as_of": "2025-04-20",
+  "expect": {
+   "metric": "positive_reply_events",
+   "as_of": "2025-04-20"
+  }
+ },
+ {
+  "q": "What is the average confirmed deal size at fest eve?",
+  "as_of": "2025-04-11",
+  "expect": {
+   "metric": "avg_confirmed_deal",
+   "as_of": "2025-04-11",
+   "money": true
+  }
+ },
+ {
+  "q": "How much open pipeline value is left at fest eve?",
+  "as_of": "2025-04-11",
+  "expect": {
+   "metric": "open_pipeline_value",
+   "as_of": "2025-04-11",
+   "money": true
+  }
+ },
+ {
+  "q": "How many open deals have been stuck for more than 14 days at fest eve?",
+  "as_of": "2025-04-11",
+  "expect": {
+   "metric": "stuck_opportunities",
+   "as_of": "2025-04-11"
+  }
+ },
+ {
+  "q": "What is the average confirmed deal for Food and beverage brands?",
+  "as_of": "2025-04-11",
+  "expect": {
+   "metric": "avg_confirmed_deal",
+   "as_of": "2025-04-11",
+   "filters": {
+    "industry": "Food and beverage"
+   },
+   "money": true
+  }
+ },
+ {
+  "q": "Did we hit our confirmed partnership target by fest eve?",
+  "as_of": "2025-04-11",
+  "expect": {
+   "contains_any": [
+    "28"
+   ],
+   "and_metric": {
+    "metric": "confirmed_partnerships",
+    "as_of": "2025-04-11"
+   }
+  }
+ },
+ {
+  "q": "How much cash did we actually collect from sponsors?",
+  "as_of": "2025-04-20",
+  "expect": {
+   "refuse_like": [
+    "can't confirm",
+    "can't provide",
+    "cannot confirm",
+    "cannot provide",
+    "do not track",
+    "doesn't track",
+    "no record",
+    "not cash",
+    "not currently track",
+    "not recorded",
+    "payments",
+    "receipt",
+    "reported value"
+   ]
+  }
+ },
+ {
+  "q": "Did Beardo's activation increase festival attendance?",
+  "as_of": "2025-04-20",
+  "expect": {
+   "refuse_like": [
+    "association",
+    "can't",
+    "can't provide",
+    "cannot",
+    "cannot provide",
+    "do not track",
+    "does not show",
+    "doesn't show",
+    "doesn't track",
+    "no evidence",
+    "no record",
+    "not currently track",
+    "not establish",
+    "not recorded"
+   ]
+  }
+ },
+ {
+  "q": "What is our sponsor satisfaction score?",
+  "as_of": "2025-04-20",
+  "expect": {
+   "refuse_like": [
+    "can't provide",
+    "cannot provide",
+    "do not track",
+    "doesn't track",
+    "don't track",
+    "isn't tracked",
+    "no data",
+    "no record",
+    "not available",
+    "not currently track",
+    "not in the data",
+    "not recorded",
+    "not track"
+   ]
+  }
+ },
+ {
+  "q": "What did Mood Indigo raise in sponsorship last year?",
+  "as_of": "2025-04-20",
+  "expect": {
+   "refuse_like": [
+    "can't",
+    "can't provide",
+    "cannot",
+    "cannot provide",
+    "do not track",
+    "doesn't track",
+    "don't have",
+    "no data",
+    "no record",
+    "not currently track",
+    "not in",
+    "not recorded",
+    "outside"
+   ]
+  }
+ },
+ {
+  "q": "How many opportunities does Beardo have?",
+  "as_of": "2025-04-20",
+  "expect": {
+   "contains_any": [
+    "2",
+    "two"
+   ]
+  }
+ },
+ {
+  "q": "Create follow-up tasks for every open deal stuck more than 14 days.",
+  "as_of": "2025-04-11",
+  "expect": {
+   "drafts_min": 1
+  }
+ },
+ {
+  "q": "Which campaigns produced confirmed partnerships?",
+  "as_of": "2025-04-11",
+  "expect": {
+   "contains_all": [
+    "Warm Partner Introductions",
+    "Creator Network Referrals",
+    "Partner Interest Form"
+   ]
+  }
+ }
+]
