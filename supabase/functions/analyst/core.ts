@@ -8,6 +8,7 @@ export type Deps = {
   rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
   select: (table: string) => Promise<{ data: unknown[] | null; error: { message: string } | null }>;
   gemini: (body: unknown) => Promise<any>;
+  deadline?: () => number; // time (ms) after which we stop calling the model and answer from what we have
 };
 
 export const SYSTEM = `You are "Ask the Analyst", the growth analyst inside a college-festival Sponsor Growth Center.
@@ -20,8 +21,9 @@ Rules:
 5. Sponsor activations are associations. Never claim they caused extra visitors.
 6. If no tool or field can answer, start the answer with "The data doesn't track this." and say what is missing, then offer the closest metric that does exist. Never estimate a missing number.
 7. To suggest an action, call propose_task. To suggest moving budget or pausing/stopping/activating a campaign in next season's plan, call propose_campaign_change (one call per campaign and field; to move budget, call it twice: one cut, one increase). You cannot create tasks yourself; the user confirms in the app. After calling propose_task, still write the full answer in the format below, and mention the draft under Next step.
+7a. The 2025 source has NO cost, spend or budget data. Any 2025 cost question (cost per deal, cost per lead, CAC, spend by campaign, ROI) must start with "The data doesn't track this." Then give the closest real metric (for example outreach attempts per confirmed deal) and say budgets exist only for next season's plan. Answer the rest of a mixed question normally.
 7b. Budget and spend questions: use v_campaign_budget (per campaign) and v_campaign_budget_totals (totals). Never add up rows yourself.
-7c. Write for a sponsorship lead, not an engineer. In the answer text never mention tool, function, table, view or column names (no query_metric, src_opportunities, v_campaign_budget, stage codes like partner_confirmed) and never write ISO dates: write dates like "15 Mar 2025" and stages like "Confirmed". The app shows the technical detail separately under "Show working".
+7c. Write for a sponsorship lead, not an engineer. In the answer text never mention tool, function, table, view or column names (no query_metric, src_opportunities, v_campaign_budget, stage codes like partner_confirmed), not even under Source; write money with ₹ and the full figure first, e.g. "₹7,07,500 (₹7.1L)" or "₹93,333" and never write ISO dates: write dates like "15 Mar 2025" and stages like "Confirmed". The app shows the technical detail separately under "Show working".
 8. Answer format (markdown):
 **Answer:** one or two sentences, with the as-of date.
 **Evidence:** the numbers and, in plain words, which records they came from (e.g. "confirmed deals from warm campaigns up to 15 Mar 2025").
@@ -33,7 +35,7 @@ Rules:
 const S = (description: string) => ({ type: "string", description });
 export const TOOLS = [{
   functionDeclarations: [
-    { name: "query_metric", description: "Compute a named metric as of a date, optionally filtered and grouped. Metrics: confirmed_partnerships, confirmed_value, avg_confirmed_deal, opportunities, open_opportunities, open_pipeline_value, stuck_opportunities, qualified_brands, assessed_brands, brands_touched, outreach_attempts, replied_brands, positive_reply_events, meetings_held_brands, opt_out_events, touches. Stages are prospecting, contacted, proposal_sent, negotiating, partner_confirmed (= confirmed / won), lost, withdrawn. Support types are cash, in_kind. Opportunity metrics can filter/group by stage, owner_name, industry, support_type, originating_campaign_name, brand_name. Qualification metrics by qualification_status, source_campaign_name. Interaction metrics by campaign_name, channel, event_type, outcome, owner_id.",
+    { name: "query_metric", description: "Compute a named metric as of a date, optionally filtered and grouped. Metrics: confirmed_partnerships, confirmed_value, avg_confirmed_deal, opportunities, open_opportunities, open_pipeline_value, stuck_opportunities, qualified_brands, assessed_brands, brands_touched, outreach_attempts, replied_brands, positive_reply_events, meetings_held_brands, opt_out_events, first_contacts (outreach sent + introductions received + web inbound: one per contact made; use this for 'touches' or effort per deal), touches (EVERY logged event incl. deliveries, replies and meetings; only use when asked for all events). Stages are prospecting, contacted, proposal_sent, negotiating, partner_confirmed (= confirmed / won), lost, withdrawn. Support types are cash, in_kind. Opportunity metrics can filter/group by stage, owner_name, industry, support_type, originating_campaign_name, brand_name. Qualification metrics by qualification_status, source_campaign_name. Interaction metrics by campaign_name, channel, event_type, outcome, owner_id.",
       parameters: { type: "object", properties: { metric: S("metric name"), as_of: S("YYYY-MM-DD"), filters_json: S('JSON object of column: value, e.g. {"industry":"Mobility"}. Use "{}" for none.'), group_by: S("optional column to group by") }, required: ["metric", "as_of"] } },
     { name: "list_opportunities", description: "List opportunities with their latest stage as of a date (brand, stage, values, owner, industry, support type, campaign, days in stage).",
       parameters: { type: "object", properties: { as_of: S("YYYY-MM-DD"), stage: S("optional: prospecting, contacted, proposal_sent, negotiating, partner_confirmed, lost or withdrawn"), owner_name: S("optional"), industry: S("optional"), min_days_in_stage: { type: "number", description: "optional; returns only OPEN deals idle at least this many days" } }, required: ["as_of"] } },
@@ -144,7 +146,8 @@ export async function answer(history: Msg[], asOf: string, d: Deps) {
   const t0 = Date.now();
   let nudged = false;
   for (let step = 0; step < 8; step++) {
-    if (Date.now() - t0 > 100000) return { answer: drafts.length || changes.length ? "The AI service is slow right now, so I stopped before writing the full answer. I did draft the suggestion below from the data; the Show working panel lists every number I read. Ask again for the full write-up." : "This question needed more steps than I can run in one go (the AI service is slow right now). Try again, or ask a narrower question.", drafts, changes, trace };
+    const deadline = d.deadline ? d.deadline() : t0 + 55000;
+    if (Date.now() > deadline - 3000) return { answer: fallback(trace, drafts, changes), drafts, changes, trace, fallback: true };
     const tg = Date.now();
     const res = await d.gemini({
       systemInstruction: { parts: [{ text: `${SYSTEM}\nThe app's current as-of date is ${asOf}.` }] },
@@ -154,13 +157,13 @@ export async function answer(history: Msg[], asOf: string, d: Deps) {
     });
     trace.push({ tool: "(model)", args: { step }, result: res?.error ?? res?.usageMetadata ?? null, ms: Date.now() - tg });
     const content = res?.candidates?.[0]?.content;
-    if (!content) return { answer: "The AI service (Google Gemini) is busy right now. Please try again in a few seconds.", drafts, changes, trace };
+    if (!content) return { answer: fallback(trace, drafts, changes), drafts, changes, trace, fallback: true };
     contents.push(content); // keep the model's parts exactly (includes any thought signatures)
     const calls = (content.parts ?? []).filter((p: any) => p.functionCall);
     if (calls.length === 0) {
       const text = (content.parts ?? []).map((p: any) => p.text ?? "").join("").trim();
       // Gemini sometimes stops after a tool call with no text: ask once more for the written answer.
-      if (!text && !nudged) { nudged = true; contents.push({ role: "user", parts: [{ text: "Now write the full answer in the required format, using the tool results above." }] }); continue; }
+      if ((!text || (drafts.length + changes.length > 0 && text.length < 200)) && !nudged) { nudged = true; contents.push({ role: "user", parts: [{ text: "Now write the full answer in the required format, using the tool results above." }] }); continue; }
       return { answer: text || "I read the data but couldn't write the answer this time. Please ask again.", drafts, changes, trace };
     }
     const responses = [];
@@ -174,4 +177,36 @@ export async function answer(history: Msg[], asOf: string, d: Deps) {
     contents.push({ role: "user", parts: responses });
   }
   return { answer: "I couldn't finish this analysis in a few steps. Try a narrower question.", drafts, changes, trace };
+}
+
+const LABEL: Record<string, string> = {
+  query_metric: "Metric", list_opportunities: "Deals", get_opportunity_history: "Deal history", get_target: "Target",
+  evaluate_bets: "Bets", get_app_table: "App data", run_sql: "Query", propose_task: "Draft task", propose_campaign_change: "Draft change",
+};
+/** When the model is too slow or busy, answer from the numbers already read, so the user is never left waiting. No guessing. */
+export function fallback(trace: { tool: string; args: unknown; result: unknown }[], drafts: Draft[], changes: Change[]) {
+  const reads = trace.filter((t) => t.tool !== "(model)" && !String(t.tool).startsWith("propose"));
+  if (!reads.length && !drafts.length && !changes.length)
+    return "**Answer:** The AI model (free Google Gemini) is busy right now, so I couldn't start this analysis. Nothing was guessed.\n\n**Next step:** ask again in about 20 seconds, or use the dashboard tiles, which don't need the AI.";
+  const lines = reads.slice(0, 6).map((t) => {
+    const a = (t.args ?? {}) as Record<string, unknown>;
+    const what = [LABEL[t.tool] ?? "Data", a.metric, a.group_by ? `by ${a.group_by}` : "", a.as_of ? `as of ${a.as_of}` : ""].filter(Boolean).join(" ");
+    return `- **${what}:** ${summarise(t.result)}`;
+  });
+  return [
+    "**Answer:** The AI model is slow right now, so here are the figures I already read from the live database, without an AI write-up. Nothing below is estimated.",
+    "", ...lines, "",
+    drafts.length || changes.length ? "I also drafted the suggestion below from this data; it is only saved if you confirm it.\n" : "",
+    "**Next step:** ask again for the full explanation, or narrow the question (one metric at a time is fastest).",
+  ].join("\n");
+}
+function summarise(r: unknown): string {
+  if (r == null) return "no result";
+  if (typeof r === "object" && !Array.isArray(r) && (r as any).error) return `could not read (${String((r as any).error).slice(0, 80)})`;
+  const rows = Array.isArray(r) ? r : Array.isArray((r as any)?.rows) ? (r as any).rows : null;
+  if (!rows) return JSON.stringify(r).slice(0, 160);
+  if (!rows.length) return "no rows";
+  if ("grp" in rows[0] && "value" in rows[0]) return rows.slice(0, 8).map((x: any) => `${x.grp ?? "total"} ${x.value}`).join(", ") + (rows.length > 8 ? ` and ${rows.length - 8} more` : "");
+  const keys = Object.keys(rows[0]).slice(0, 4);
+  return `${rows.length} rows, e.g. ` + rows.slice(0, 3).map((x: any) => keys.map((k) => `${k} ${x[k]}`).join(" / ")).join("; ");
 }

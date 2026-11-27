@@ -29,6 +29,8 @@ export default function App() {
   const { asOf, setAsOf, clock, setClock, setChatOpen, refresh, confirm, toast } = useApp();
   if (!configured) return <Setup />;
   const current = PAGES.find((p) => p.id === page) ?? PAGES[0];
+  // Reset wipes every visitor's edits, so it is hidden from evaluators. The owner opens the app with ?admin=1 to see it.
+  const admin = new URLSearchParams(location.search).get("admin") === "1";
 
   async function reset() {
     const ok = await confirm("Reset the demo data?", { ok: "Reset everything", danger: true,
@@ -49,7 +51,7 @@ export default function App() {
             <div style={{ marginTop: 6 }}>Pipeline edits are saved on this date (23:00 IST), so they fit into the 2025 timeline. It stops at fest eve ({fmtDate(FEST_EVE)}).</div>
             <input type="date" aria-label="Edit date" value={clock} min={SEASON_START} max={FEST_EVE} onChange={(e) => e.target.value && setClock(e.target.value)} style={{ marginTop: 6 }} />
           </details>
-          <button onClick={reset} title="Demo only: wipes all app edits for every visitor">Reset demo data (demo only)</button>
+          {admin && <button onClick={reset} title="Admin only: wipes all app edits for every visitor">Reset demo data (admin)</button>}
         </div>
       </aside>
       <main className="main">

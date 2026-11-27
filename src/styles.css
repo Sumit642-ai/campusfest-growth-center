@@ -206,3 +206,4 @@ table.t.stale { opacity: .4; }
 .hero-kv dt { color: #c7c9f5; }
 .hero-kv dd { margin: 0; font-weight: 600; }
 .tile .explain { align-self: flex-start; text-align: left; }
+.recon { background: #f1f5ff; border: 1px solid #d9e0ff; border-radius: 10px; padding: 10px 14px; font-size: 13px; margin-bottom: 12px; }

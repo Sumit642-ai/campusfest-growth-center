@@ -19,7 +19,7 @@ begin
     src := format('qual_snapshot(%L)', as_of);
     allowed := array['qualification_status','source_campaign_name'];
     expr := case metric when 'qualified_brands' then 'count(*) filter (where qualification_status=''qualified'')' else 'count(*)' end;
-  elsif metric in ('brands_touched','outreach_attempts','replied_brands','positive_reply_events','meetings_held_brands','opt_out_events','touches') then
+  elsif metric in ('brands_touched','outreach_attempts','replied_brands','positive_reply_events','meetings_held_brands','opt_out_events','touches','first_contacts') then
     src := format('interactions_asof(%L)', as_of);
     allowed := array['campaign_name','channel','event_type','outcome','owner_id'];
     expr := case metric
@@ -29,10 +29,11 @@ begin
       when 'positive_reply_events' then 'count(*) filter (where event_type=''replied'' and outcome=''positive'')'
       when 'meetings_held_brands' then 'count(distinct brand_id) filter (where event_type=''meeting_held'')'
       when 'opt_out_events' then 'count(*) filter (where event_type=''opt_out'')'
-      when 'touches' then 'count(*)'
+      when 'touches' then 'count(*)'  -- every logged event (sends, deliveries, replies, meetings): not a count of contacts
+      when 'first_contacts' then 'count(*) filter (where event_type in (''outreach_sent'',''introduction_received'',''web_inbound''))'
     end;
   else
-    raise exception 'Unknown metric %. Allowed: confirmed_partnerships, confirmed_value, avg_confirmed_deal, opportunities, open_opportunities, open_pipeline_value, stuck_opportunities, qualified_brands, assessed_brands, brands_touched, outreach_attempts, replied_brands, positive_reply_events, meetings_held_brands, opt_out_events, touches', metric;
+    raise exception 'Unknown metric %. Allowed: confirmed_partnerships, confirmed_value, avg_confirmed_deal, opportunities, open_opportunities, open_pipeline_value, stuck_opportunities, qualified_brands, assessed_brands, brands_touched, outreach_attempts, replied_brands, positive_reply_events, meetings_held_brands, opt_out_events, touches, first_contacts', metric;
   end if;
   if group_by is not null and not group_by = any(allowed) then
     raise exception 'Cannot group % by %. Allowed: %', metric, group_by, allowed;

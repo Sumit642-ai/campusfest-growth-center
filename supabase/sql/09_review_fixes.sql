@@ -18,3 +18,9 @@ update tasks set due_date = '2027-01-11' where created_by = 'seed' and bet_id = 
 update assumptions set value = '0 of 33 opportunities at season end',
   source = 'CampusFest 2025. Cobalt Learning (₹80k, cold LinkedIn) was confirmed on 25 Feb and withdrew on 20 Mar, so views between those dates show 1 cold deal'
 where name = 'Cold channel close rate';
+
+-- "Touches" counted every event (deliveries, replies, meetings). Effort is now measured in first contacts.
+update bets set finding = '100% of confirmed deals came from warm or inbound sources; about 2 first contacts per deal' where id = 2;
+update assumptions set name = 'First contacts per warm deal', value = 'about 2 (48 contacts for 24 deals)',
+  source = 'CampusFest 2025 interactions: outreach sent, introductions and web inbound only (not deliveries, replies or meetings)'
+where name in ('Touches per warm deal', 'First contacts per warm deal');

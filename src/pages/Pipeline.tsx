@@ -16,7 +16,7 @@ const colOf = (stage: string) => (stage === "lost" || stage === "withdrawn" ? "c
 type Move = { o: Opp; to: string; value: number };
 
 export default function Pipeline() {
-  const { asOf, clock, version, refresh, ask, toast } = useApp();
+  const { asOf, setAsOf, clock, version, refresh, ask, toast } = useApp();
   const [move, setMove] = useState<Move | null>(null);
   const [open, setOpen] = useState<Opp | null>(null);
   const [drag, setDrag] = useState<string | null>(null);
@@ -93,7 +93,7 @@ export default function Pipeline() {
     <>
       <h1>Pipeline</h1>
       <p className="sub">Every opportunity at its latest stage on {fmtDate(asOf)}. {openOpps.length} open, worth {inrShort(openOpps.reduce((a, o) => a + Number(o.proposed_value_inr), 0))}. Drag a card to change its stage, or click it to see its history.</p>
-      {!canEdit && <div className="note blue">Editing is off on this date. Edits are saved on the edit date ({fmtDate(clock)}, fest eve by default), and saving them while you look at an earlier date would be confusing. Click “11 Apr (fest eve)” in the top bar to edit.</div>}
+      {!canEdit && <div className="note blue">Editing is off on this date. Edits are saved on the edit date ({fmtDate(clock)}, fest eve by default), and saving them while you look at an earlier date would be confusing. <div style={{ marginTop: 8 }}><button className="btn sm primary" onClick={() => setAsOf(clock)}>Edit on {fmtDate(clock)} (fest eve) →</button></div></div>}
       <div className="note blue">Edits never change the source data. Each one adds a new history row dated on the edit date, so earlier dates still show what was true then. Every change shows a check step first and can be undone.</div>
       {err && <div className="err" style={{ marginBottom: 10 }}>{err}</div>}
       <div className="inline" style={{ marginBottom: 10 }}>

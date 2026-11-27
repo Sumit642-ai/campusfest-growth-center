@@ -17,7 +17,7 @@ create table activity_log (id serial primary key, at timestamptz default now(), 
 -- The 5 bets (blueprint, slide 2)
 insert into bets (name, finding, budget_inr, owner, start_date, end_date, extra_if_works_inr, chance, ev_inr) values
  ('Proof Pack renewals and upsell', 'Only 3 of 24 partners got an activation', 30000, 'Meera Iyer', '2027-01-04', '2027-01-24', 570000, 0.70, 400000),
- ('Scale the warm engine', '100% of confirmed deals came from warm or inbound sources; about 7 touches per deal', 60000, 'Kabir Shah', '2027-01-04', '2027-02-28', 770000, 0.60, 460000),
+ ('Scale the warm engine', '100% of confirmed deals came from warm or inbound sources; about 2 first contacts per deal', 60000, 'Kabir Shah', '2027-01-04', '2027-02-28', 770000, 0.60, 460000),
  ('Zombie rescue with AI-drafted proposals', '26 frozen cold deals worth ₹14.4L', 20000, 'Riya Kapoor', '2027-01-04', '2027-01-31', 360000, 0.40, 150000),
  ('Sponsor-funded attendee campaigns (flywheel)', 'Sponsors and attendee campaigns were linked only 3 times', 30000, 'Meera Iyer', '2027-01-11', '2027-02-28', 600000, 0.35, 210000),
  ('Category exclusivity auction', '6 food, 5 mobility and 5 consumer brands shared one audience in 2025', 45000, 'Riya Kapoor', '2027-01-20', '2027-03-25', 350000, 0.45, 160000);
@@ -44,7 +44,7 @@ insert into bet_metrics (bet_id, measured_on, sample, value, note, created_by) v
 insert into assumptions (name, value, source, is_assumption, confidence) values
  ('Average confirmed deal', '₹93,333 (median ₹92,500)', 'CampusFest 2025, 24 confirmed deals', false, 'high'),
  ('Warm brand-to-deal rate', '55%', 'CampusFest 2025 warm and inbound campaigns', false, 'medium'),
- ('Touches per warm deal', 'about 7', 'CampusFest 2025 interactions', false, 'medium'),
+ ('First contacts per warm deal', 'about 2 (48 contacts for 24 deals)', 'CampusFest 2025 interactions: outreach sent, introductions and web inbound only (not deliveries, replies or meetings)', false, 'medium'),
  ('Cold channel close rate', '0 of 33 opportunities at season end', 'CampusFest 2025. Cobalt Learning (₹80k, cold LinkedIn) was confirmed on 25 Feb and withdrew on 20 Mar, so views between those dates show 1 cold deal', false, 'high'),
  ('Median days to close', '10', 'CampusFest 2025 opportunity history', false, 'medium'),
  ('In-kind share of confirmed value', '11%', 'CampusFest 2025', false, 'high'),

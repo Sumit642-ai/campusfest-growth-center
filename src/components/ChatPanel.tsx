@@ -28,11 +28,14 @@ export default function ChatPanel() {
     const next: Turn[] = [...turns, { role: "user", text: q.trim() }];
     setTurns(next); setText(""); setBusy(true);
     try {
-      const { data, error } = await sb.functions.invoke("analyst", { body: { as_of: asOf, messages: next.map((t) => ({ role: t.role, text: t.text })) } });
+      // The server gives up on the AI after 50 s and answers from the data it read; this 65 s cap is a safety net.
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), 65000);
+      const { data, error } = await sb.functions.invoke("analyst", { body: { as_of: asOf, messages: next.map((t) => ({ role: t.role, text: t.text })) }, signal: ctl.signal }).finally(() => clearTimeout(timer));
       if (error || !data?.answer) throw new Error(error?.message ?? "empty");
       setTurns([...next, { role: "model", text: data.answer, trace: data.trace, drafts: (data.drafts ?? []).map((d: Draft) => ({ ...d, state: "pending" })), changes: (data.changes ?? []).map((c: Change) => ({ ...c, state: "pending" })) }]);
     } catch {
-      setTurns([...next, { role: "model", text: "The analyst is busy, try again in a few seconds." }]);
+      setTurns([...next, { role: "model", text: "The AI didn't answer within a minute, so nothing was guessed. Ask again, or use the dashboard tiles, which don't need the AI." }]);
     } finally { setBusy(false); }
   }
 

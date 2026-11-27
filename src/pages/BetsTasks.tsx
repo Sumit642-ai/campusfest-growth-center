@@ -42,6 +42,10 @@ export default function BetsTasks() {
     <>
       <h1>Bets & Tasks</h1>
       <p className="sub">Five bets for next season, ranked by expected value per rupee of budget (EV ÷ budget), the same order as the deck. Total expected extra {inrShort(totalEv)} for {inrShort(totalBudget)} of budget. Each bet turns green, amber or red from its latest real reading against the scale and stop lines below.</p>
+      <div className="recon">
+        <b>How the numbers fit:</b> base plan (renewals + warm list, no bets) <b>₹26.6L</b> + expected extra from the five bets <b>{inrShort(totalEv)}</b> = <b>{inrShort(2660000 + totalEv)}</b>, which rounds to the ₹41L target on slides 1 and 2 (simulated P50 ₹40.5L).
+        Bet 5 adds a premium on deals we already sign, so it adds value but no new deals. The campaign plan on Funnel & Campaigns splits the same ₹41L into 38 deals.
+      </div>
       <div className="note blue">These bets run in the next season, CampusFest 2027 (Jan–Mar 2027, fest 10–11 Apr 2027), so the 2025 as-of date in the top bar doesn't apply here. Readings are dated in the 2027 calendar. Demo readings are shown for illustration only and never set the badge.</div>
       <div className="inline" style={{ marginBottom: 12 }}>
         <button className="btn sm" onClick={() => ask("Which bets should we scale, change or stop right now? Show the numbers and suggest tasks.")}>Which bets should we scale or stop? →</button>
