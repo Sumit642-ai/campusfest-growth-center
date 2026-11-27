@@ -71,7 +71,7 @@ export default function CampaignPlan() {
         <div className="card tile"><div className="label">Budget (live campaigns)</div><div className="value">{inrShort(tot.budget)}</div>
           <div className="bar"><i style={{ width: `${tot.budget ? Math.min(100, (tot.spent / tot.budget) * 100) : 0}%` }} /></div><div className="hint">{inr(tot.spent)} spent · {inr(tot.budget - tot.spent)} left</div></div>
         <div className="card tile"><div className="label">Planned deals</div><div className="value">{tot.deals}</div><div className="hint">target on slide 1: 38 at P50</div></div>
-        <div className="card tile"><div className="label">Planned value</div><div className="value">{inrShort(tot.value)}</div><div className="hint">plan, not results</div></div>
+        <div className="card tile"><div className="label">Planned value</div><div className="value">{inrShort(tot.value)}</div><div className="hint">plan, not results · slide target ₹41L (P50)</div></div>
         <div className="card tile"><div className="label">Over budget</div><div className="value" style={{ color: over.length ? "var(--red)" : undefined }}>{over.length}</div><div className="hint">{over.length ? over.map((o) => o.name).join(", ") : "none"}</div></div>
       </div>
       {err && <div className="err" style={{ marginBottom: 8 }}>{err}</div>}

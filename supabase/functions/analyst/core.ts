@@ -16,7 +16,7 @@ Rules:
 1. Never do arithmetic yourself. Get every number from a tool. If you need a ratio, call tools for both parts and say "calculated as A / B".
 2. Always pass an as_of date (YYYY-MM-DD). If the user gives none, use the as-of date from the app (given below). Never use information dated after it.
 3. Keep populations separate: outreach attempts are not brands; positive replies are not qualified brands; qualified brands are not confirmed partnerships.
-4. Confirmed value is reported value, not cash. Cash paid only comes from the payments table (app data). The source data has no bank receipts.
+4. Confirmed value is reported value, not cash. Cash paid only comes from the payments table (app data). The source data has no bank receipts. Payment rows whose note starts with 'demo seed' are demo data (assumed terms: 50% within 7 days of signing, 50% by 1 Apr); always say that cash figures come from this demo payments log, not from the 2025 source.
 5. Sponsor activations are associations. Never claim they caused extra visitors.
 6. If no tool or field can answer, start the answer with "The data doesn't track this." and say what is missing, then offer the closest metric that does exist. Never estimate a missing number.
 7. To suggest an action, call propose_task. To suggest moving budget or pausing/stopping/activating a campaign in next season's plan, call propose_campaign_change (one call per campaign and field; to move budget, call it twice: one cut, one increase). You cannot create tasks yourself; the user confirms in the app. After calling propose_task, still write the full answer in the format below, and mention the draft under Next step.
@@ -27,7 +27,7 @@ Rules:
 **Calculation:** one line, if any.
 **Source / app data / assumption:** tag each number.
 **Confidence:** high, medium or low, with the reason (e.g. small sample).
-**Next step:** a suggestion, if useful.`;
+**Next step:** always one concrete action tied to the evidence: who does what, by when, and which metric or threshold to watch (e.g. "Riya: send Proof Packs to the 18 test partners this week; watch meetings booked in 7 days"). Never write "None". If the data cannot answer, the next step is how to get the missing data.`;
 
 const S = (description: string) => ({ type: "string", description });
 export const TOOLS = [{
@@ -137,6 +137,7 @@ export async function answer(history: Msg[], asOf: string, d: Deps) {
   const changes: Change[] = [];
   const trace: { tool: string; args: unknown; result: unknown; ms?: number }[] = [];
   const t0 = Date.now();
+  let nudged = false;
   for (let step = 0; step < 8; step++) {
     if (Date.now() - t0 > 100000) return { answer: drafts.length || changes.length ? "The AI service is slow right now, so I stopped before writing the full answer. I did draft the suggestion below from the data; the Show working panel lists every number I read. Ask again for the full write-up." : "This question needed more steps than I can run in one go (the AI service is slow right now). Try again, or ask a narrower question.", drafts, changes, trace };
     const tg = Date.now();
@@ -153,7 +154,9 @@ export async function answer(history: Msg[], asOf: string, d: Deps) {
     const calls = (content.parts ?? []).filter((p: any) => p.functionCall);
     if (calls.length === 0) {
       const text = (content.parts ?? []).map((p: any) => p.text ?? "").join("").trim();
-      return { answer: text, drafts, changes, trace };
+      // Gemini sometimes stops after a tool call with no text: ask once more for the written answer.
+      if (!text && !nudged) { nudged = true; contents.push({ role: "user", parts: [{ text: "Now write the full answer in the required format, using the tool results above." }] }); continue; }
+      return { answer: text || "I read the data but couldn't write the answer this time. Please ask again.", drafts, changes, trace };
     }
     const responses = [];
     for (const p of calls) {

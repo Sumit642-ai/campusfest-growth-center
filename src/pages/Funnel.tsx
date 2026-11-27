@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { metric, table } from "../lib/supabase";
 import { useApp } from "../lib/state";
@@ -20,10 +21,12 @@ const COLS = [
   ["confirmed_value", "Confirmed value", "originating_campaign_name"],
 ] as const;
 const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : "–");
+const SHORT = new Set(["touches", "brands_touched", "confirmed_partnerships", "confirmed_value"]);
 const WARM = new Set(["Warm Partner Introductions", "Creator Network Referrals", "Partner Interest Form"]);
 
 export default function Funnel() {
   const { asOf, version, ask } = useApp();
+  const [all, setAll] = useState(false);
   const s = useAsync(async () => {
     const [campaigns, ...cols] = await Promise.all([
       table<Campaign>("src_campaigns"),
@@ -43,6 +46,7 @@ export default function Funnel() {
   if (s.error) return <ErrorBox error={s.error} />;
   if (!s.data) return <Loading />;
   const { rows, total } = s.data;
+  const cols = COLS.filter(([m]) => all || SHORT.has(m));
   const coldTouches = rows.filter((r) => !WARM.has(r.campaign_name)).reduce((a, r) => a + r.v.touches, 0);
 
   return (
@@ -51,9 +55,10 @@ export default function Funnel() {
       <p className="sub">What each sponsor campaign produced up to {fmtDate(asOf)}, and next season's campaign plan with owners, dates, budgets and spend.</p>
       <div className="note">Attempts, brands, replies, qualified brands and partnerships are different populations. They can't be divided into one neat funnel, so each column counts its own thing.</div>
       <div className="card scroll">
+        <div className="inline" style={{ justifyContent: "space-between", marginBottom: 8 }}><b>2025 campaigns</b><button className="btn" onClick={() => setAll(!all)}>{all ? "Show key columns" : `Show all ${COLS.length + 4} columns`}</button></div>
         <table className="t">
           <thead>
-            <tr><th>Campaign</th><th>Channel</th><th className="r">Brand → deal</th><th className="r">Reply rate</th><th className="r">Meeting rate</th>{COLS.map(([m, l]) => <th key={m} className="r">{l}</th>)}<th className="r">Touches per deal</th></tr>
+            <tr><th>Campaign</th>{all && <th>Channel</th>}<th className="r">Brand → deal</th><th className="r">Reply rate</th>{all && <th className="r">Meeting rate</th>}{cols.map(([m, l]) => <th key={m} className="r">{l}</th>)}<th className="r">Touches per deal</th></tr>
           </thead>
           <tbody>
             {rows.map((r) => {
@@ -61,18 +66,18 @@ export default function Funnel() {
               return (
                 <tr key={r.campaign_name} className={dead ? "bad" : r.v.confirmed_partnerships > 0 ? "good" : ""}>
                   <td><b>{r.campaign_name}</b><div className="small muted">{WARM.has(r.campaign_name) ? "Warm or inbound" : "Cold"}</div></td>
-                  <td>{r.channel}</td>
+                  {all && <td>{r.channel}</td>}
                   <td className="r"><b>{pct(r.v.confirmed_partnerships, r.v.brands_touched)}</b></td>
                   <td className="r">{pct(r.v.replied_brands, r.v.brands_touched)}</td>
-                  <td className="r">{pct(r.v.meetings_held_brands, r.v.brands_touched)}</td>
-                  {COLS.map(([m]) => <td key={m} className="r">{m === "confirmed_value" ? inr(r.v[m]) : r.v[m]}</td>)}
+                  {all && <td className="r">{pct(r.v.meetings_held_brands, r.v.brands_touched)}</td>}
+                  {cols.map(([m]) => <td key={m} className="r">{m === "confirmed_value" ? inr(r.v[m]) : r.v[m]}</td>)}
                   <td className="r">{r.v.confirmed_partnerships ? (r.v.touches / r.v.confirmed_partnerships).toFixed(1) : dead ? "no deals" : "–"}</td>
                 </tr>
               );
             })}
             <tr>
-              <td><b>Total</b></td><td /><td colSpan={3} className="small muted">rates are per campaign</td>
-              {COLS.map(([m]) => <td key={m} className="r"><b>{m === "confirmed_value" ? inr(total[m]) : total[m]}</b></td>)}
+              <td><b>Total</b></td>{all && <td />}<td colSpan={all ? 3 : 2} className="small muted">rates are per campaign</td>
+              {cols.map(([m]) => <td key={m} className="r"><b>{m === "confirmed_value" ? inr(total[m]) : total[m]}</b></td>)}
               <td className="r">{total.confirmed_partnerships ? (total.touches / total.confirmed_partnerships).toFixed(1) : "–"}</td>
             </tr>
           </tbody>

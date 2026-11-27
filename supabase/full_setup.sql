@@ -2304,20 +2304,20 @@ insert into bets (name, finding, budget_inr, owner, start_date, end_date, extra_
  ('Scale the warm engine', '100% of confirmed deals came from warm or inbound sources; about 7 touches per deal', 60000, 'Kabir Shah', '2027-01-04', '2027-02-28', 770000, 0.60, 460000),
  ('Zombie rescue with AI-drafted proposals', '26 frozen cold deals worth ₹14.4L', 20000, 'Riya Kapoor', '2027-01-04', '2027-01-31', 360000, 0.40, 150000),
  ('Sponsor-funded attendee campaigns (flywheel)', 'Sponsors and attendee campaigns were linked only 3 times', 30000, 'Meera Iyer', '2027-01-11', '2027-02-28', 600000, 0.35, 210000),
- ('Outcome add-ons for partners', 'Partners get little measurable value', 45000, 'Riya Kapoor', '2027-01-18', '2027-03-14', 360000, 0.50, 180000);
+ ('Category exclusivity auction', '6 food, 5 mobility and 5 consumer brands shared one audience in 2025', 45000, 'Riya Kapoor', '2027-01-20', '2027-03-25', 350000, 0.45, 160000);
 
 -- Scale / change / stop lines (blueprint, slide 3). value >= scale_if -> SCALE, value <= stop_if -> STOP, else CHANGE.
 insert into thresholds (bet_id, metric, min_sample, scale_if, stop_if, guardrail, first_read, rule_text) values
- (1, 'Renewal-rate gap, Proof Pack group minus holdout (points)', 24, 15, 0, 'No partner lost because of the bigger ask', '18 Proof Pack vs 6 holdout, by 5 Feb',
-  'Scale if gap >= 15 points; change if 0-15; stop if Proof Pack group is at or below holdout'),
+ (1, 'Proof Pack partners who book a meeting within 7 days (of 18)', 18, 9, 4, 'No partner lost because of the bigger ask; the 6-partner holdout is read as direction only', 'By 5 Feb',
+  'Scale if 9+ of 18 meet (pack to all 24); change if 5-8 (keep pack, drop the upsell); stop if 4 or fewer (money to Bet 2)'),
  (2, 'New warm brands per week', 3, 6.5, 4.6, 'At least 40% of referred brands qualify', 'Weeks 1-3',
   'Scale if >= 6.5 a week; change if 4.6-6.5; stop if no better than 2025''s 4.6'),
  (3, 'Revived deals that move a stage within 14 days (of first 10)', 10, 3, 0, 'No closer time taken from warm deals', 'First 10 revived deals',
   'Scale if >= 3 of 10 move; change if 1-2; stop if 0'),
  (4, 'Co-funded slots sold (of first 8 pitches)', 8, 3, 0, 'Attendee team confirms we can deliver promised sign-ups', 'First 8 pitches, by 20 Feb',
   'Scale if >= 3 of 8 sold; change if 1-2; stop if 0'),
- (5, 'Partners saying yes to an add-on (of first 10 pitches)', 10, 4, 1, 'Promised sign-ups <= 70% of what we can deliver', 'First 10 partner pitches',
-  'Scale if >= 4 of 10; change if 2-3; stop if <= 1');
+ (5, 'Categories with 2+ sealed bids above the tier price (of 3)', 3, 2, 0, 'No losing bidder drops out of a lower tier', 'Bids close 14 Feb',
+  'Scale if 2+ categories get 2+ bids (run all 3); change if 1 (sell at a fixed premium); stop if 0 (sell normal tiers)');
 
 -- Demo readings so the status chips can be seen working. Clearly labelled: next season has not happened yet.
 insert into bet_metrics (bet_id, measured_on, sample, value, note, created_by) values
@@ -2433,7 +2433,8 @@ create table if not exists campaign_spend (
 );
 
 -- Seed plan. Budgets add up to the ₹1.85L work budget on slide 2. Deal targets add up to 38 (the P50 on slide 1) at the
--- 2025 average deal of about ₹93k; add-ons raise value on existing deals, so they add value but no new deals.
+-- 2025 average deal of about ₹93k; the auction adds a premium on top of tier deals, so it adds value but no new deals.
+-- Proof Pack renewals ask for one tier up (×1.2, about ₹1.12L each), so planned value adds up to about ₹41L, the P50 target.
 create or replace function seed_campaign_plan() returns void language sql security definer set search_path = public as $$
   delete from campaign_spend where true;
   delete from campaign_plan where true;
@@ -2444,14 +2445,14 @@ create or replace function seed_campaign_plan() returns void language sql securi
     'Warm Partner Introductions: 34 touches, 8 deals in 2025', 'Best rate in 2025: 4.3 touches per deal', 'seed'),
    ('Partner interest form', 'web_inbound', 'inbound', 'Kabir Shah', '2027-01-04', '2027-03-20', 0, 'planned', 5, 465000, null,
     'Partner Interest Form: 62 touches, 7 deals in 2025', 'Kabir moves here from cold email', 'seed'),
-   ('Proof Pack renewals', 'email', 'renewal', 'Meera Iyer', '2027-01-04', '2027-01-24', 30000, 'planned', 14, 1302000, 1,
+   ('Proof Pack renewals', 'email', 'renewal', 'Meera Iyer', '2027-01-04', '2027-01-24', 30000, 'planned', 14, 1562000, 1,
     'Only 3 of 24 partners got an activation in 2025', '18 partners get the pack, 6 held out', 'seed'),
    ('Zombie rescue, AI-drafted proposals', 'email', 'revival', 'Riya Kapoor', '2027-01-04', '2027-01-31', 20000, 'planned', 2, 186000, 3,
     '26 frozen cold deals worth ₹14.4L', 'A person reviews every AI draft before it is sent', 'seed'),
    ('Sponsor-funded attendee campaigns', 'partnership', 'partner', 'Meera Iyer', '2027-01-11', '2027-02-28', 30000, 'planned', 2, 300000, 4,
     'Only 3 sponsor–attendee links in 2025', 'Co-funded slots at ₹1.5L each', 'seed'),
-   ('Outcome add-ons', 'upsell', 'renewal', 'Riya Kapoor', '2027-01-18', '2027-03-14', 45000, 'planned', 0, 180000, 5,
-    'Partners saw little measurable value', 'e.g. 500 verified sign-ups for ₹50k', 'seed'),
+   ('Category exclusivity auction', 'auction', 'renewal', 'Riya Kapoor', '2027-01-20', '2027-03-25', 45000, 'planned', 0, 160000, 5,
+    '6 food, 5 mobility, 5 consumer brands shared one audience in 2025', 'Sealed bids for sole category rights; floor = tier price', 'seed'),
    ('Brand discovery email', 'email', 'cold', 'Kabir Shah', null, null, 0, 'stopped', 0, 0, null,
     'Brand Discovery Email: 507 touches, 0 deals in 2025', 'Stopped: cold outreach closed 0 of 33 in 2025', 'seed');
 $$;
@@ -2517,4 +2518,45 @@ select count(*) filter (where status <> 'stopped') as live_campaigns,
        sum(target_value_inr) filter (where status <> 'stopped') as target_value_inr
 from v_campaign_budget;
 grant select on v_campaign_budget_totals to anon, authenticated, service_role;
+
+
+-- 08_demo_payments.sql
+-- Demo payments, so the north-star tile (cash collected by fest eve) shows realistic numbers.
+-- The 2025 source has no bank receipts, so these rows are clearly labelled demo data ('demo seed').
+-- Terms (assumption): 50% within 7 days of signing, 50% by 1 Apr or 25 days after signing, whichever is earlier.
+-- A few second instalments arrive late or not at all, so collection risk is visible.
+create or replace function seed_payments() returns void language sql security definer set search_path = public as $$
+  delete from payments where note like 'demo seed%';
+  with signed as (
+    select o.opportunity_id, min((h.effective_at at time zone 'Asia/Kolkata')::date) as signed_on,
+           max(h.confirmed_value_inr) as value, abs(hashtext(o.opportunity_id)) % 10 as r
+    from src_opportunities o join src_opp_history h using (opportunity_id)
+    where o.support_type = 'cash' and h.stage = 'partner_confirmed'
+      and o.opportunity_id in (select opportunity_id from opp_snapshot(date '2025-04-20') where stage = 'partner_confirmed')
+    group by o.opportunity_id
+  )
+  insert into payments (opportunity_id, amount_inr, due_date, paid_on, method, note)
+  select opportunity_id, round(value * 0.5), signed_on + 7, signed_on + 3 + (r % 4), 'bank transfer', 'demo seed: advance 50%' from signed
+  union all
+  select opportunity_id, value - round(value * 0.5), least(signed_on + 25, date '2025-04-01'),
+         case when r in (0, 1) then null                                                      -- 2 in 10 not paid yet
+              when r = 2 then least(signed_on + 25, date '2025-04-01') + 12                    -- 1 in 10 pays after the fest
+              else least(signed_on + 25, date '2025-04-01') - (r % 3) end,
+         'bank transfer', 'demo seed: balance 50%' from signed;
+$$;
+grant execute on function seed_payments() to service_role;
+revoke execute on function seed_payments() from public, anon, authenticated;
+select seed_payments();
+
+-- Reset also restores the demo payments and the seeded plan.
+create or replace function reset_demo() returns void language sql security definer set search_path = public as $$
+  delete from app_opp_history where true;
+  delete from app_qualification where true;
+  delete from payments where true;
+  delete from tasks where created_by <> 'seed';
+  delete from bet_metrics where created_by <> 'seed';
+  select seed_campaign_plan();
+  select seed_payments();
+  insert into activity_log (actor, action, detail) values ('app', 'reset_demo', '{}'::jsonb);
+$$;
 

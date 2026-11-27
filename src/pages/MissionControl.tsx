@@ -4,6 +4,7 @@ import { useApp } from "../lib/state";
 import { useAsync } from "../lib/useAsync";
 import { addDays, fmtDate, inr, inrShort } from "../lib/format";
 import { ErrorBox, Loading, Tile } from "../components/ui";
+import WeekDrivers from "../components/WeekDrivers";
 
 type Target = { qualified_brands_goal: number; confirmed_partnerships_goal: number; target_version: string };
 const STAGE_ORDER = ["prospecting", "contacted", "proposal_sent", "negotiating", "partner_confirmed"];
@@ -103,6 +104,7 @@ export default function MissionControl() {
           <p className="small muted" style={{ marginTop: 8 }}>Confirmed value {inr(d.cash + d.inKind)} as of {day}.</p>
         </div>
       </div>
+      <WeekDrivers />
     </>
   );
 }

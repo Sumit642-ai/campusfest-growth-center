@@ -54,6 +54,7 @@ async function stepData() {
     const [{ n }] = await sql(`select count(*)::int as n from ${t}`);
     console.log(`${t}: ${n} rows`);
   }
+  await sql("select seed_payments()"); // demo payments need the opportunities loaded first
   const checks = await sql(`select
     (select count(*) from v_interactions)::int as interactions,
     (select count(*) filter (where qualification_status='qualified') from qual_snapshot('2025-03-15'))::int as qualified_15mar,

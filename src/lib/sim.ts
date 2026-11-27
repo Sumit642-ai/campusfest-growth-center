@@ -23,7 +23,7 @@ export function simulate(x: SimInput): SimOutput {
     tot += binom(x.warmBrands + (b2 ? 15 : 0), x.warmClose) * x.avgDeal * normal(1, 0.15);
     if (works(2)) tot += binom(26, 0.2) * 70000; // zombie rescue
     if (works(3)) tot += binom(6, 0.67) * 150000; // co-funded attendee campaigns
-    if (works(4)) tot += binom(12, 0.6) * 50000; // outcome add-ons
+    if (works(4)) tot += binom(3, 0.9) * 148000 - 50000; // category auction: premium in 3 categories minus ₹50k lost from brands turned away
     val.push(tot);
     const c = Math.min(1, x.collection + (rnd() - 0.5) * 0.15);
     cash.push(tot * (anyBet ? 0.92 : 0.89) * c);

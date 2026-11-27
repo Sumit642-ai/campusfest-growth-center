@@ -31,7 +31,8 @@ create table if not exists campaign_spend (
 );
 
 -- Seed plan. Budgets add up to the ₹1.85L work budget on slide 2. Deal targets add up to 38 (the P50 on slide 1) at the
--- 2025 average deal of about ₹93k; add-ons raise value on existing deals, so they add value but no new deals.
+-- 2025 average deal of about ₹93k; the auction adds a premium on top of tier deals, so it adds value but no new deals.
+-- Proof Pack renewals ask for one tier up (×1.2, about ₹1.12L each), so planned value adds up to about ₹41L, the P50 target.
 create or replace function seed_campaign_plan() returns void language sql security definer set search_path = public as $$
   delete from campaign_spend where true;
   delete from campaign_plan where true;
@@ -42,14 +43,14 @@ create or replace function seed_campaign_plan() returns void language sql securi
     'Warm Partner Introductions: 34 touches, 8 deals in 2025', 'Best rate in 2025: 4.3 touches per deal', 'seed'),
    ('Partner interest form', 'web_inbound', 'inbound', 'Kabir Shah', '2027-01-04', '2027-03-20', 0, 'planned', 5, 465000, null,
     'Partner Interest Form: 62 touches, 7 deals in 2025', 'Kabir moves here from cold email', 'seed'),
-   ('Proof Pack renewals', 'email', 'renewal', 'Meera Iyer', '2027-01-04', '2027-01-24', 30000, 'planned', 14, 1302000, 1,
+   ('Proof Pack renewals', 'email', 'renewal', 'Meera Iyer', '2027-01-04', '2027-01-24', 30000, 'planned', 14, 1562000, 1,
     'Only 3 of 24 partners got an activation in 2025', '18 partners get the pack, 6 held out', 'seed'),
    ('Zombie rescue, AI-drafted proposals', 'email', 'revival', 'Riya Kapoor', '2027-01-04', '2027-01-31', 20000, 'planned', 2, 186000, 3,
     '26 frozen cold deals worth ₹14.4L', 'A person reviews every AI draft before it is sent', 'seed'),
    ('Sponsor-funded attendee campaigns', 'partnership', 'partner', 'Meera Iyer', '2027-01-11', '2027-02-28', 30000, 'planned', 2, 300000, 4,
     'Only 3 sponsor–attendee links in 2025', 'Co-funded slots at ₹1.5L each', 'seed'),
-   ('Outcome add-ons', 'upsell', 'renewal', 'Riya Kapoor', '2027-01-18', '2027-03-14', 45000, 'planned', 0, 180000, 5,
-    'Partners saw little measurable value', 'e.g. 500 verified sign-ups for ₹50k', 'seed'),
+   ('Category exclusivity auction', 'auction', 'renewal', 'Riya Kapoor', '2027-01-20', '2027-03-25', 45000, 'planned', 0, 160000, 5,
+    '6 food, 5 mobility, 5 consumer brands shared one audience in 2025', 'Sealed bids for sole category rights; floor = tier price', 'seed'),
    ('Brand discovery email', 'email', 'cold', 'Kabir Shah', null, null, 0, 'stopped', 0, 0, null,
     'Brand Discovery Email: 507 touches, 0 deals in 2025', 'Stopped: cold outreach closed 0 of 33 in 2025', 'seed');
 $$;

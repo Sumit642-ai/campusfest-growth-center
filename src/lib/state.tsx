@@ -13,7 +13,7 @@ type Ctx = {
 const C = createContext<Ctx | null>(null);
 
 export function AppState({ children }: { children: ReactNode }) {
-  const [asOf, setAsOf] = useState(SEASON_END);
+  const [asOf, setAsOf] = useState("2025-03-15"); // mid-season by default, so the dashboard shows a live campaign
   const [clock, setClockState] = useState(() => localStorage.getItem("campaign_clock") ?? SEASON_END);
   const [version, setVersion] = useState(0);
   const [chatOpen, setChatOpen] = useState(false);

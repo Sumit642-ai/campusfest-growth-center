@@ -20,20 +20,20 @@ insert into bets (name, finding, budget_inr, owner, start_date, end_date, extra_
  ('Scale the warm engine', '100% of confirmed deals came from warm or inbound sources; about 7 touches per deal', 60000, 'Kabir Shah', '2027-01-04', '2027-02-28', 770000, 0.60, 460000),
  ('Zombie rescue with AI-drafted proposals', '26 frozen cold deals worth ₹14.4L', 20000, 'Riya Kapoor', '2027-01-04', '2027-01-31', 360000, 0.40, 150000),
  ('Sponsor-funded attendee campaigns (flywheel)', 'Sponsors and attendee campaigns were linked only 3 times', 30000, 'Meera Iyer', '2027-01-11', '2027-02-28', 600000, 0.35, 210000),
- ('Outcome add-ons for partners', 'Partners get little measurable value', 45000, 'Riya Kapoor', '2027-01-18', '2027-03-14', 360000, 0.50, 180000);
+ ('Category exclusivity auction', '6 food, 5 mobility and 5 consumer brands shared one audience in 2025', 45000, 'Riya Kapoor', '2027-01-20', '2027-03-25', 350000, 0.45, 160000);
 
 -- Scale / change / stop lines (blueprint, slide 3). value >= scale_if -> SCALE, value <= stop_if -> STOP, else CHANGE.
 insert into thresholds (bet_id, metric, min_sample, scale_if, stop_if, guardrail, first_read, rule_text) values
- (1, 'Renewal-rate gap, Proof Pack group minus holdout (points)', 24, 15, 0, 'No partner lost because of the bigger ask', '18 Proof Pack vs 6 holdout, by 5 Feb',
-  'Scale if gap >= 15 points; change if 0-15; stop if Proof Pack group is at or below holdout'),
+ (1, 'Proof Pack partners who book a meeting within 7 days (of 18)', 18, 9, 4, 'No partner lost because of the bigger ask; the 6-partner holdout is read as direction only', 'By 5 Feb',
+  'Scale if 9+ of 18 meet (pack to all 24); change if 5-8 (keep pack, drop the upsell); stop if 4 or fewer (money to Bet 2)'),
  (2, 'New warm brands per week', 3, 6.5, 4.6, 'At least 40% of referred brands qualify', 'Weeks 1-3',
   'Scale if >= 6.5 a week; change if 4.6-6.5; stop if no better than 2025''s 4.6'),
  (3, 'Revived deals that move a stage within 14 days (of first 10)', 10, 3, 0, 'No closer time taken from warm deals', 'First 10 revived deals',
   'Scale if >= 3 of 10 move; change if 1-2; stop if 0'),
  (4, 'Co-funded slots sold (of first 8 pitches)', 8, 3, 0, 'Attendee team confirms we can deliver promised sign-ups', 'First 8 pitches, by 20 Feb',
   'Scale if >= 3 of 8 sold; change if 1-2; stop if 0'),
- (5, 'Partners saying yes to an add-on (of first 10 pitches)', 10, 4, 1, 'Promised sign-ups <= 70% of what we can deliver', 'First 10 partner pitches',
-  'Scale if >= 4 of 10; change if 2-3; stop if <= 1');
+ (5, 'Categories with 2+ sealed bids above the tier price (of 3)', 3, 2, 0, 'No losing bidder drops out of a lower tier', 'Bids close 14 Feb',
+  'Scale if 2+ categories get 2+ bids (run all 3); change if 1 (sell at a fixed premium); stop if 0 (sell normal tiers)');
 
 -- Demo readings so the status chips can be seen working. Clearly labelled: next season has not happened yet.
 insert into bet_metrics (bet_id, measured_on, sample, value, note, created_by) values
