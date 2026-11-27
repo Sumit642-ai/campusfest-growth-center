@@ -86,7 +86,7 @@ export default function ChatPanel() {
               )}
             </div>
           ))}
-          {busy && <div className="typing">Analyst is querying the data… (usually 10-40 seconds)</div>}
+          {busy && <Progress />}
         </div>
         <div className="chat-foot">
           <div className="starters">{STARTERS.map((s) => <button key={s} onClick={() => send(s)} disabled={busy}>{s}</button>)}</div>
@@ -98,6 +98,20 @@ export default function ChatPanel() {
         </div>
       </div>
     </>
+  );
+}
+
+const STEPS = ["Reading your question", "Querying the live database", "Checking the numbers", "Writing the answer"];
+/** Shows where the analyst probably is, with elapsed time, so a 20-second wait doesn't feel frozen. */
+function Progress() {
+  const [t, setT] = useState(0);
+  useEffect(() => { const i = setInterval(() => setT((x) => x + 1), 1000); return () => clearInterval(i); }, []);
+  const step = t < 2 ? 0 : t < 9 ? 1 : t < 15 ? 2 : 3;
+  return (
+    <div className="progress" aria-live="polite">
+      {STEPS.map((st, i) => <div key={st} className={i < step ? "done" : i === step ? "now" : ""}>{i < step ? "✓" : i === step ? "●" : "○"} {st}</div>)}
+      <div className="small muted">{t}s · usually 10–30 seconds{t > 30 ? ". The free model may be busy; it retries backup models automatically." : ""}</div>
+    </div>
   );
 }
 

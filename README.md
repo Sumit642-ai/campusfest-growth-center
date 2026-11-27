@@ -115,21 +115,24 @@ The P10, P50 and P90 of the totals give the floor, target and stretch on slide 1
 
 | Campaign | Owner | Budget | Target deals | Built on (2025) |
 |---|---|---|---|---|
-| Creator & alumni referrals (Bet 2) | Nisha Rao | ₹35,000 | 8 | 72 touches, 9 deals |
-| Warm partner introductions (Bet 2) | Riya Kapoor | ₹25,000 | 7 | 34 touches, 8 deals |
-| Partner interest form | Kabir Shah | ₹0 | 5 | 62 touches, 7 deals |
+| Creator & alumni referrals (Bet 2) | Kabir Shah | ₹35,000 | 8 | 72 touches, 9 deals |
+| Warm partner introductions (Bet 2) | Kabir Shah | ₹25,000 | 7 | 34 touches, 8 deals |
+| Partner interest form | Nisha Rao | ₹0 | 5 | 62 touches, 7 deals |
 | Proof Pack renewals (Bet 1) | Meera Iyer | ₹30,000 | 14 | 3 of 24 partners activated |
 | Zombie rescue, AI drafts (Bet 3) | Riya Kapoor | ₹20,000 | 2 | 26 frozen deals, ₹14.4L |
 | Sponsor-funded attendee campaigns (Bet 4) | Meera Iyer | ₹30,000 | 2 | 3 sponsor–attendee links |
 | Category exclusivity auction (Bet 5) | Riya Kapoor | ₹45,000 | 0 (premium on existing deals) | 6 food, 5 mobility, 5 consumer brands in 2025 |
 | Brand discovery email | Kabir Shah | ₹0, **stopped** | 0 | 507 touches, 0 deals |
 
-Spend logged on a campaign also counts toward its bet's budget on the Bets page. The reset button restores this plan.
+Spend logged on a campaign also counts toward its bet's budget on the Bets page. The reset button restores this plan. Each bet has one owner, who also owns its campaigns (Kabir owns Bet 2 and both of its warm campaigns, moving over from cold email). Next season is CampusFest 2027 (bets and campaigns Jan–Mar 2027, fest 10–11 Apr 2027); seeded tasks, demo bet readings and spend dates use the same calendar.
 
 **Design choices**
 - **The as-of date** sits on every screen and opens on 15 Mar 2025 (mid-season, so there is still work to do). Quick buttons jump to 15 Feb, 15 Mar, 11 Apr and 20 Apr.
-- **Campaign clock:** the data is from 2025, so new edits are stamped on the clock date (default 20 Apr 2025, 23:00 IST). That way they show up in the 2025 timeline. Earlier as-of dates still show what was true then.
-- **Append-only edits:** source tables are never changed. Edits go into `app_opp_history` and are merged in through views. A reset button removes all app edits.
+- **The as-of date is in the link** (`?asof=2025-03-15`), so a shared link opens on the same date.
+- **Edit date (sidebar → Advanced):** the data is from 2025, so pipeline edits are stamped on the edit date (default fest eve, 11 Apr 2025, 23:00 IST; it can't go past fest eve). That way they show up in the 2025 timeline. Earlier as-of dates still show what was true then.
+- **Season over:** from 12 Apr (the fest), Mission Control switches to a retrospective: "Missed by 4", signals read Met/Missed instead of OK/Act, and the weighted pipeline is ₹0.
+- **Safe edits:** moving a deal shows a check step (warns on skipped stages and idle deals, asks for the confirmed value) and every move, delete and spend entry gives a confirmation or an Undo.
+- **Append-only edits:** source tables are never changed. Edits go into `app_opp_history` and are merged in through views. A reset button removes all app edits. **It is demo-only:** any visitor can use it; a real team would put it behind an admin login.
 
 **One complete workflow (the Loom shows the same steps)**
 1. **See the problem.** Mission Control, as of 20 Mar 2025: the weekly drivers panel shows the 3 signings came from warm campaigns, while cold campaigns only moved deals a stage.
@@ -165,6 +168,8 @@ Spend logged on a campaign also counts toward its bet's budget on the Bets page.
 - After adding campaign management (26 Nov 2026): 17 of 18. The miss was real: the analyst read the metric's row count (950 interactions) instead of its value (322 outreach attempts). Fixed by returning only the value from `query_metric`; the re-run passed **18 of 18**.
 - After seeding demo payments (27 Nov 2026): 17 of 18. The miss was real: Gemini called a tool and then returned no text. The analyst now asks the model once more when that happens; the failed question then passed twice in a row.
 - Budget questions on the new campaign plan were checked live: it found the over-budget campaign from `v_campaign_budget`, took totals from `v_campaign_budget_totals` instead of adding rows itself, drafted a follow-up task, and said "the data doesn't track this" when asked for 2025 spend.
+- After the 27 Nov review fixes (as-of rules for payments and bet readings, season-over view, stale-deal rule, safer edits), every screen was checked in a browser at 15 Mar, 11 Apr and 20 Apr and at phone width (390px), and a deal move, its Undo, the delete confirmations, the campaign form errors and the simulator's out-of-date warning were tested end to end.
+- 27 Nov 2026, after the review fixes and the plainer answer wording: **18 of 18 passed** on the live analyst.
 - _Add the score on 10 unseen questions from a friend here._
 
 ## 7. Setup
@@ -207,4 +212,6 @@ Analyst: set the `GEMINI_API_KEY` secret in Supabase (Edge Functions, then Secre
 - The renewal rate is assumed, because 2025 has no renewal history.
 - Activation impact is unknown (association only).
 - The holdout is small (6 vs 18), so its result shows a direction, not statistical proof.
-- Bet readings in the app are labelled demo readings, because next season hasn't happened yet.
+- Bet readings in the app are labelled demo readings, because next season hasn't happened yet. Demo readings never set a bet's scale/change/stop badge, in the app or in the analyst.
+- Brand names and industries (e.g. "Cedar Wellness" in Mobility) are exactly as given in the assignment's fictional dataset. The app never edits source data, so they are left as they are.
+- The weighted pipeline treats deals idle for more than 14 days as 0% likely to close, because no 2025 deal closed after 13 days. This is a rule from one season of data.

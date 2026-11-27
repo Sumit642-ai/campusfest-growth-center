@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { configured, rpc } from "./lib/supabase";
-import { SEASON_END, SEASON_START, useApp } from "./lib/state";
+import { FEST_EVE, SEASON_END, SEASON_START, useApp } from "./lib/state";
 import { fmtDate } from "./lib/format";
 import ChatPanel from "./components/ChatPanel";
 import MissionControl from "./pages/MissionControl";
@@ -26,14 +26,16 @@ function useHash() {
 
 export default function App() {
   const page = useHash();
-  const { asOf, setAsOf, clock, setClock, setChatOpen, refresh } = useApp();
+  const { asOf, setAsOf, clock, setClock, setChatOpen, refresh, confirm, toast } = useApp();
   if (!configured) return <Setup />;
   const current = PAGES.find((p) => p.id === page) ?? PAGES[0];
 
   async function reset() {
-    if (!window.confirm("Remove every edit, payment, task and reading added in the app? Source data stays untouched.")) return;
+    const ok = await confirm("Reset the demo data?", { ok: "Reset everything", danger: true,
+      body: <p>This removes every edit, task, reading and payment added in the app, for every visitor, and restores the seeded plan. The 2025 source data is never touched. This is a demo-only control; a real team would put it behind an admin login.</p> });
+    if (!ok) return;
     await rpc("reset_demo", {});
-    refresh();
+    refresh(); toast("Demo data reset.");
   }
 
   return (
@@ -42,21 +44,20 @@ export default function App() {
         <div className="brand">Sponsor Growth Center<span>CampusFest · sponsorship</span></div>
         {PAGES.map((p) => <a key={p.id} href={`#${p.id}`} className={`nav ${p.id === current.id ? "on" : ""}`}>{p.label}</a>)}
         <div className="side-foot">
-          <div>
-            <div style={{ marginBottom: 4 }}>Campaign clock</div>
-            <input type="date" value={clock} min={SEASON_START} max={SEASON_END} onChange={(e) => e.target.value && setClock(e.target.value)} />
-            <div style={{ marginTop: 4 }}>New edits are stamped on this date (23:00 IST), so they show up in the 2025 data.</div>
-          </div>
-          <button onClick={reset}>Reset demo data</button>
+          <details className="adv">
+            <summary>Advanced: edit date</summary>
+            <div style={{ marginTop: 6 }}>Pipeline edits are saved on this date (23:00 IST), so they fit into the 2025 timeline. It stops at fest eve ({fmtDate(FEST_EVE)}).</div>
+            <input type="date" aria-label="Edit date" value={clock} min={SEASON_START} max={FEST_EVE} onChange={(e) => e.target.value && setClock(e.target.value)} style={{ marginTop: 6 }} />
+          </details>
+          <button onClick={reset} title="Demo only: wipes all app edits for every visitor">Reset demo data (demo only)</button>
         </div>
       </aside>
       <main className="main">
         <div className="top">
-          <label>As of <input type="date" value={asOf} min={SEASON_START} max={SEASON_END} onChange={(e) => e.target.value && setAsOf(e.target.value)} /></label>
+          <label title="Every screen shows only what was known on this date">As of <input type="date" value={asOf} min={SEASON_START} max={SEASON_END} onChange={(e) => e.target.value && setAsOf(e.target.value)} /></label>
           <div className="quick">
             {QUICK.map(([l, d]) => <button key={d} className={asOf === d ? "on" : ""} onClick={() => setAsOf(d)}>{l}</button>)}
           </div>
-          <span className="chip-clock">Campaign clock: {fmtDate(clock)}</span>
           <div className="spacer" />
           <button className="btn primary" onClick={() => setChatOpen(true)}>Ask the Analyst</button>
         </div>

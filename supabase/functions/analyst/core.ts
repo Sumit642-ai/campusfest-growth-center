@@ -21,9 +21,10 @@ Rules:
 6. If no tool or field can answer, start the answer with "The data doesn't track this." and say what is missing, then offer the closest metric that does exist. Never estimate a missing number.
 7. To suggest an action, call propose_task. To suggest moving budget or pausing/stopping/activating a campaign in next season's plan, call propose_campaign_change (one call per campaign and field; to move budget, call it twice: one cut, one increase). You cannot create tasks yourself; the user confirms in the app. After calling propose_task, still write the full answer in the format below, and mention the draft under Next step.
 7b. Budget and spend questions: use v_campaign_budget (per campaign) and v_campaign_budget_totals (totals). Never add up rows yourself.
+7c. Write for a sponsorship lead, not an engineer. In the answer text never mention tool, function, table, view or column names (no query_metric, src_opportunities, v_campaign_budget, stage codes like partner_confirmed) and never write ISO dates: write dates like "15 Mar 2025" and stages like "Confirmed". The app shows the technical detail separately under "Show working".
 8. Answer format (markdown):
 **Answer:** one or two sentences, with the as-of date.
-**Evidence:** the numbers and which records (tool + filters) they came from.
+**Evidence:** the numbers and, in plain words, which records they came from (e.g. "confirmed deals from warm campaigns up to 15 Mar 2025").
 **Calculation:** one line, if any.
 **Source / app data / assumption:** tag each number.
 **Confidence:** high, medium or low, with the reason (e.g. small sample).
@@ -121,13 +122,17 @@ async function evaluateBets(d: Deps) {
   if (b.error || t.error || m.error) return { error: (b.error ?? t.error ?? m.error)!.message };
   return (b.data as any[]).map((bet) => {
     const th = (t.data as any[]).find((x) => x.bet_id === bet.id);
-    const readings = (m.data as any[]).filter((x) => x.bet_id === bet.id).sort((x, y) => String(y.measured_on).localeCompare(String(x.measured_on)) || y.id - x.id);
+    const all = (m.data as any[]).filter((x) => x.bet_id === bet.id).sort((x, y) => String(y.measured_on).localeCompare(String(x.measured_on)) || y.id - x.id);
+    // Demo readings illustrate the badge only; they never decide scale/change/stop.
+    const isDemo = (x: any) => x.created_by === "seed" || /demo/i.test(x.note ?? "");
+    const readings = all.filter((x) => !isDemo(x));
     const last = readings[0];
+    const demo = all.find(isDemo) ?? null;
     let call = "no threshold set";
-    if (th && !last) call = "no data yet";
+    if (th && !last) call = "no real data yet (the bets run in Jan-Mar 2027)";
     else if (th && last && last.sample < th.min_sample) call = `not enough data (${last.sample} of ${th.min_sample})`;
     else if (th && last) call = last.value >= th.scale_if ? "SCALE" : last.value <= th.stop_if ? "STOP" : "CHANGE";
-    return { bet: bet.name, metric: th?.metric, latest: last ?? null, scale_if: th?.scale_if, stop_if: th?.stop_if, min_sample: th?.min_sample, call };
+    return { bet: bet.name, owner: bet.owner, runs: `${bet.start_date} to ${bet.end_date}`, metric: th?.metric, latest: last ?? null, demo_reading_not_used: demo, scale_if: th?.scale_if, stop_if: th?.stop_if, min_sample: th?.min_sample, call };
   });
 }
 

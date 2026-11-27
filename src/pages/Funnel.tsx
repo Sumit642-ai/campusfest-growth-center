@@ -90,13 +90,14 @@ export default function Funnel() {
         </p>
       </div>
       <div className="card" style={{ marginTop: 14 }}>
-        <h2>Confirmed value by campaign</h2>
+        <h2>Confirmed value by campaign <span className="small muted">· purple = warm or inbound, grey = cold</span></h2>
         <ResponsiveContainer width="100%" height={240}>
-          <BarChart data={rows.map((r) => ({ name: r.campaign_name, value: r.v.confirmed_value, warm: WARM.has(r.campaign_name) }))} layout="vertical" margin={{ left: 60, right: 30 }}>
+          <BarChart data={rows.map((r) => ({ name: r.campaign_name, value: r.v.confirmed_value, warm: WARM.has(r.campaign_name) }))} layout="vertical" margin={{ left: 8, right: 30 }}>
             <CartesianGrid stroke="#eef0f3" horizontal={false} />
             <XAxis type="number" tickFormatter={(v) => inrShort(v)} tick={{ fontSize: 11 }} />
-            <YAxis type="category" dataKey="name" width={170} tick={{ fontSize: 11 }} />
-            <Tooltip formatter={(v) => inr(Number(v))} />
+            <YAxis type="category" dataKey="name" width={200} interval={0}
+              tick={(p: any) => <text x={p.x} y={p.y} dy={4} textAnchor="end" fontSize={11} fill="#646b7a">{p.payload?.value}</text>} />
+            <Tooltip cursor={false} formatter={(v) => [inr(Number(v)), "Confirmed value"]} />
             <Bar dataKey="value" name="Confirmed value" radius={[0, 4, 4, 0]}>
               {rows.map((r) => <Cell key={r.campaign_name} fill={WARM.has(r.campaign_name) ? "#4f46e5" : "#c3c7d1"} />)}
             </Bar>

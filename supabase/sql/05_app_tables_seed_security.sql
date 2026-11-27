@@ -35,16 +35,17 @@ insert into thresholds (bet_id, metric, min_sample, scale_if, stop_if, guardrail
  (5, 'Categories with 2+ sealed bids above the tier price (of 3)', 3, 2, 0, 'No losing bidder drops out of a lower tier', 'Bids close 14 Feb',
   'Scale if 2+ categories get 2+ bids (run all 3); change if 1 (sell at a fixed premium); stop if 0 (sell normal tiers)');
 
--- Demo readings so the status chips can be seen working. Clearly labelled: next season has not happened yet.
+-- Demo readings, dated in the 2027 season the bets belong to. Clearly labelled, and the app and analyst never use them
+-- to set a scale/change/stop call: next season has not happened yet.
 insert into bet_metrics (bet_id, measured_on, sample, value, note, created_by) values
- (2, '2025-04-14', 2, 5.5, 'Demo reading, not real data', 'seed'),
- (3, '2025-04-16', 10, 3, 'Demo reading, not real data', 'seed');
+ (2, '2027-01-25', 2, 5.5, 'Demo reading, not real data', 'seed'),
+ (3, '2027-01-28', 10, 3, 'Demo reading, not real data', 'seed');
 
 insert into assumptions (name, value, source, is_assumption, confidence) values
  ('Average confirmed deal', '₹93,333 (median ₹92,500)', 'CampusFest 2025, 24 confirmed deals', false, 'high'),
  ('Warm brand-to-deal rate', '55%', 'CampusFest 2025 warm and inbound campaigns', false, 'medium'),
  ('Touches per warm deal', 'about 7', 'CampusFest 2025 interactions', false, 'medium'),
- ('Cold channel close rate', '0 of 33 opportunities', 'CampusFest 2025', false, 'high'),
+ ('Cold channel close rate', '0 of 33 opportunities at season end', 'CampusFest 2025. Cobalt Learning (₹80k, cold LinkedIn) was confirmed on 25 Feb and withdrew on 20 Mar, so views between those dates show 1 cold deal', false, 'high'),
  ('Median days to close', '10', 'CampusFest 2025 opportunity history', false, 'medium'),
  ('In-kind share of confirmed value', '11%', 'CampusFest 2025', false, 'high'),
  ('Renewal rate of past partners', '50% (65% with Proof Pack)', 'Plan assumption, no renewal data in source', true, 'low'),
@@ -53,10 +54,11 @@ insert into assumptions (name, value, source, is_assumption, confidence) values
  ('Confirmed cash paid before the fest', '87%', 'Plan assumption, source has no bank receipts', true, 'low'),
  ('Work budget', '₹1.85L across 5 bets', 'Plan', true, 'medium');
 
+-- Next-season tasks, due in the first week of the 2027 bets (same calendar as the bets and the campaign plan).
 insert into tasks (title, owner, due_date, status, bet_id, reason, created_by) values
- ('Send Proof Pack to 18 past partners, normal email to 6 holdout', 'Meera Iyer', '2025-04-25', 'open', 1, 'Bet 1 needs a clean holdout to prove cause', 'seed'),
- ('Move Kabir''s cold list to warm sources (referrals, alumni, partner form)', 'Kabir Shah', '2025-04-28', 'open', 2, 'Kabir owns 126 of 180 brands and zero opportunities', 'seed'),
- ('Rank the 26 frozen cold deals and draft proposals for the top 10', 'Riya Kapoor', '2025-04-30', 'open', 3, '26 open deals worth ₹14.4L have not moved since March', 'seed');
+ ('Send Proof Pack to 18 past partners, normal email to 6 holdout', 'Meera Iyer', '2027-01-08', 'open', 1, 'Bet 1 needs a clean holdout to prove cause', 'seed'),
+ ('Move Kabir''s cold list to warm sources (referrals, partner intros)', 'Kabir Shah', '2027-01-11', 'open', 2, 'Kabir owns 126 of 180 brands and zero opportunities', 'seed'),
+ ('Rank the 26 frozen cold deals and draft proposals for the top 10', 'Riya Kapoor', '2027-01-11', 'open', 3, '26 open deals worth ₹14.4L have not moved since March', 'seed');
 
 -- Reset button: removes everything users and testers added, keeps source data and the seeded plan.
 create or replace function reset_demo() returns void language sql security definer set search_path = public as $$

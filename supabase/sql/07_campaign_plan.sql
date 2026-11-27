@@ -37,12 +37,12 @@ create or replace function seed_campaign_plan() returns void language sql securi
   delete from campaign_spend where true;
   delete from campaign_plan where true;
   insert into campaign_plan (name, channel, kind, owner, start_date, end_date, budget_inr, status, target_deals, target_value_inr, bet_id, based_on, note, created_by) values
-   ('Creator & alumni referrals', 'introduction', 'warm', 'Nisha Rao', '2027-01-04', '2027-02-28', 35000, 'planned', 8, 744000, 2,
-    'Creator Network Referrals: 72 touches, 9 deals in 2025', 'Referral fee paid only on a signed deal', 'seed'),
-   ('Warm partner introductions', 'introduction', 'warm', 'Riya Kapoor', '2027-01-04', '2027-02-28', 25000, 'planned', 7, 651000, 2,
+   ('Creator & alumni referrals', 'introduction', 'warm', 'Kabir Shah', '2027-01-04', '2027-02-28', 35000, 'planned', 8, 744000, 2,
+    'Creator Network Referrals: 72 touches, 9 deals in 2025', 'Referral fee paid only on a signed deal; Kabir moves here from cold email', 'seed'),
+   ('Warm partner introductions', 'introduction', 'warm', 'Kabir Shah', '2027-01-04', '2027-02-28', 25000, 'planned', 7, 651000, 2,
     'Warm Partner Introductions: 34 touches, 8 deals in 2025', 'Best rate in 2025: 4.3 touches per deal', 'seed'),
-   ('Partner interest form', 'web_inbound', 'inbound', 'Kabir Shah', '2027-01-04', '2027-03-20', 0, 'planned', 5, 465000, null,
-    'Partner Interest Form: 62 touches, 7 deals in 2025', 'Kabir moves here from cold email', 'seed'),
+   ('Partner interest form', 'web_inbound', 'inbound', 'Nisha Rao', '2027-01-04', '2027-03-20', 0, 'planned', 5, 465000, null,
+    'Partner Interest Form: 62 touches, 7 deals in 2025', 'Nisha answers inbound leads within a day', 'seed'),
    ('Proof Pack renewals', 'email', 'renewal', 'Meera Iyer', '2027-01-04', '2027-01-24', 30000, 'planned', 14, 1562000, 1,
     'Only 3 of 24 partners got an activation in 2025', '18 partners get the pack, 6 held out', 'seed'),
    ('Zombie rescue, AI-drafted proposals', 'email', 'revival', 'Riya Kapoor', '2027-01-04', '2027-01-31', 20000, 'planned', 2, 186000, 3,
